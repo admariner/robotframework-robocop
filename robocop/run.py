@@ -19,7 +19,8 @@ from robocop.utils import (
     FileTypeChecker,
     issues_to_lsp_diagnostic,
     RecommendationFinder,
-    is_suite_templated
+    is_suite_templated,
+    generate_github_action_matcher
 )
 
 
@@ -54,6 +55,9 @@ class Robocop:
         self.config = Config(from_cli=from_cli) if config is None else config
         self.from_cli = from_cli
         self.config.parse_opts(from_cli=from_cli)
+        if self.config.generate_action_matcher:
+            generate_github_action_matcher(self.config.format)
+            sys.exit(0)
         if not from_cli:
             self.config.reports.add('json_report')
         self.out = self.set_output()
@@ -153,13 +157,18 @@ class Robocop:
             source_rel = os.path.relpath(os.path.expanduser(rule_msg.source), self.root)
         except ValueError:
             source_rel = rule_msg.source
+        severity = {
+            'E': 'Error',
+            'W': 'Warning',
+            'I': 'Info'
+        }[rule_msg.severity.value]
         self.log_message(source=rule_msg.source,
                          source_rel=source_rel,
                          line=rule_msg.line,
                          col=rule_msg.col,
                          end_line=rule_msg.end_line,
                          end_col=rule_msg.end_col,
-                         severity=rule_msg.severity.value,
+                         severity=severity,
                          rule_id=rule_msg.rule_id,
                          desc=rule_msg.desc,
                          name=rule_msg.name)

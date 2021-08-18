@@ -17,5 +17,6 @@ from robocop.utils.misc import (
     parse_assignment_sign_type,
     token_col,
     RecommendationFinder,
-    is_suite_templated
+    is_suite_templated,
+    generate_github_action_matcher
 )

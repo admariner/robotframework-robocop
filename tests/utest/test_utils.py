@@ -1,11 +1,13 @@
-import pytest
+import json
 
+import pytest
 from robot.api import get_model
 
 from robocop.utils import (
     AssignmentTypeDetector,
     parse_assignment_sign_type,
-    RecommendationFinder
+    RecommendationFinder,
+    generate_github_action_matcher
 )
 
 
@@ -111,3 +113,27 @@ class TestRecommendationFinder:
     def test_find_similiar(self, name, candidates, similar):
         rec = RecommendationFinder().find_similar(name, candidates)
         assert similar == rec
+
+    def test_generate_github_action_matcher(self):
+        generate_github_action_matcher("{source}:{line}:{col} [{severity}] {rule_id} {desc} ({name})")
+        with open('robocop-matcher.json') as f:
+            data = json.load(f)
+        expected_matcher = {
+            "problemMatcher": [
+                {
+                    "owner": "robocop-matcher",
+                    "pattern": [
+                        {
+                            "regexp": rf"^(.+):([0-9]+):([0-9]+)\ \[(.+)\]\ ([0-9]+)\ (.+)\ \((.+)\)$",
+                            "file": 1,
+                            "line": 2,
+                            "column": 3,
+                            "severity": 4,
+                            "code": 5,
+                            "message": 6
+                        }
+                    ]
+                }
+            ]
+        }
+        assert data == expected_matcher

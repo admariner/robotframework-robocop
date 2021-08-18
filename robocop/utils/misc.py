@@ -5,6 +5,7 @@ import importlib.util
 import ast
 import difflib
 import re
+import json
 
 from robot.api import Token
 try:
@@ -226,3 +227,43 @@ def is_suite_templated(model):
     finder = TestTemplateFinder()
     finder.visit(model)
     return finder.templated
+
+
+def generate_github_action_matcher(message_format):
+    # See https://github.com/actions/toolkit/blob/main/docs/problem-matchers.md
+    pattern_names = {
+        'source': 'file',
+        'line': 'line',
+        'col': 'column',
+        'severity': 'severity',
+        'desc': 'message',
+        "rule_id": "code",
+        "name": None
+    }
+    message_format = re.escape(message_format)
+    finders = {}
+    for index, match in enumerate(re.findall('(\\\\{.+?\\\\})+', message_format), start=1):
+        name = match[2:-2]
+        if name not in pattern_names:
+            continue
+        if pattern_names[name] is not None:
+            finders[pattern_names[name]] = index
+        pattern = '([0-9]+)' if name in ('rule_id', 'line', 'col') else '(.+)'
+        message_format = message_format.replace(match, pattern)
+
+    data = {
+        "problemMatcher": [
+            {
+                "owner": "robocop-matcher",
+                "pattern": [
+                    {
+                        "regexp": f"^{message_format}$"
+                    }
+                ]
+            }
+        ]
+    }
+    for finder, index in finders.items():
+        data["problemMatcher"][0]["pattern"][0][finder] = index
+    with open('robocop-matcher.json', 'w') as f:
+        json.dump(data, f, indent=4)

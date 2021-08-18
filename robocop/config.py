@@ -127,6 +127,7 @@ class Config:
         self.list_reports = False
         self.output = None
         self.recursive = True
+        self.generate_action_matcher = False
         self.verbose = False
         self.config_from = ''
         self.parser = self._create_parser()
@@ -268,6 +269,7 @@ class Config:
         optional.add_argument('-A', '--argumentfile', metavar='PATH', help=self.HELP_MSGS['help_argfile'])
         optional.add_argument('-g', '--ignore', action=ParseDelimitedArgAction, default=self.ignore,
                               metavar='PATH', help=self.HELP_MSGS['help_ignore'])
+        optional.add_argument('--generate-action-matcher', action='store_true', help=argparse.SUPPRESS)
         optional.add_argument('-h', '--help', action='help', help=self.HELP_MSGS['help_info'])
         optional.add_argument('-v', '--version', action='version', version=__version__,
                               help=self.HELP_MSGS['help_version'])
@@ -279,7 +281,7 @@ class Config:
 
     def parse_opts(self, args=None, from_cli=True):
         args = self.preparse(args) if from_cli else None
-        if not args or args == ['--verbose'] or args == ['-vv']:
+        if not args or all(arg in ('--verbose', '-vv', '--generate-action-matcher') for arg in args):
             loaded_args = self.load_default_config_file()
             if loaded_args is None:
                 self.load_pyproject_file()
