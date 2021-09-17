@@ -3,7 +3,7 @@ name: Repo visualizer
 on:
   push:
     branches:
-      - master
+      - $CI_COMMIT_REF_NAME
 
 jobs:
   get_data:
