@@ -2,8 +2,8 @@ name: Repo visualizer
 
 on:
   push:
-    branches:
-      - $CI_COMMIT_REF_NAME
+    branches-ignore:
+      - master
 
 jobs:
   get_data:
