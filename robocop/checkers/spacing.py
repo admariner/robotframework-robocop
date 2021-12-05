@@ -422,11 +422,10 @@ class UnevenIndentChecker(VisitorChecker):
                     header_indents.append((indent_len, child))
                 else:
                     indents.append((indent_len, child))
+            elif indent_len < req_indent:
+                self.report("bad-indent", node=child)
             else:
-                if indent_len < req_indent:
-                    self.report("bad-indent", node=child)
-                else:
-                    indents.append((indent_len, child))
+                indents.append((indent_len, child))
         if not column_index:
             self.validate_standalone_comments(node.body[end_of_block:])
         previous_indent = self.validate_indent_lists(indents, previous_indent)
@@ -499,10 +498,10 @@ class UnevenIndentChecker(VisitorChecker):
     def is_templated(node):
         if not isinstance(node, TestCase):
             return False
-        for child in node.body:
-            if hasattr(child, "type") and child.type == "TEMPLATE":
-                return True
-        return False
+        return any(
+            hasattr(child, "type") and child.type == "TEMPLATE"
+            for child in node.body
+        )
 
 
 class MisalignedContinuation(VisitorChecker, ModelVisitor):

@@ -154,7 +154,7 @@ class InvalidCharactersInNameChecker(VisitorChecker):
     reports = ("not-allowed-char-in-name",)
 
     def visit_File(self, node):
-        source = node.source if node.source else self.source
+        source = node.source or self.source
         if source:
             suite_name = Path(source).stem
             if "__init__" in suite_name:
@@ -250,9 +250,12 @@ class KeywordNamingChecker(VisitorChecker):
 
     def visit_If(self, node):  # noqa
         for keyword in node.body:
-            if isinstance(keyword, KeywordCall):
-                if keyword.keyword and keyword.keyword.lower() in self.else_if:
-                    self.report("else-not-upper-case", node=keyword, col=keyword_col(keyword))
+            if (
+                isinstance(keyword, KeywordCall)
+                and keyword.keyword
+                and keyword.keyword.lower() in self.else_if
+            ):
+                self.report("else-not-upper-case", node=keyword, col=keyword_col(keyword))
         self.generic_visit(node)
 
     def check_keyword_naming(self, keyword_name, node):  # noqa
@@ -374,14 +377,13 @@ class SettingsNamingChecker(VisitorChecker):
             for arg in node.get_tokens(Token.ARGUMENT):
                 if arg.value and arg.value == "WITH NAME":
                     self.report("empty-library-alias", node=arg, col=arg.col_offset + 1)
-        else:
-            if node.alias.replace(" ", "") == node.name.replace(" ", ""):  # New Name == NewName
-                name_token = node.get_tokens(Token.NAME)[-1]
-                self.report(
-                    "duplicated-library-alias",
-                    node=name_token,
-                    col=name_token.col_offset + 1,
-                )
+        elif node.alias.replace(" ", "") == node.name.replace(" ", ""):  # New Name == NewName
+            name_token = node.get_tokens(Token.NAME)[-1]
+            self.report(
+                "duplicated-library-alias",
+                node=name_token,
+                col=name_token.col_offset + 1,
+            )
 
     def visit_ResourceImport(self, node):  # noqa
         self.check_setting_name(node.data_tokens[0].value, node)

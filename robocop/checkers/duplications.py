@@ -24,7 +24,7 @@ def configure_sections_order(value):
     sections_order = {}
     for index, name in enumerate(value.split(",")):
         if name.lower() not in section_map or section_map[name.lower()] in sections_order:
-            raise ValueError(f"Invalid section name: `name`")
+            raise ValueError('Invalid section name: `name`')
         sections_order[section_map[name.lower()]] = index
     if Token.TESTCASE_HEADER in sections_order:
         sections_order["TASK HEADER"] = sections_order[Token.TESTCASE_HEADER]
@@ -315,12 +315,12 @@ class SectionHeadersChecker(VisitorChecker):
 
     def __init__(self):
         self.sections_by_order = []
-        self.sections_by_existence = dict()
+        self.sections_by_existence = {}
         super().__init__()
 
     @staticmethod
     def section_order_to_str(order):
-        by_index = sorted([(key, value) for key, value in order.items()], key=lambda x: x[1])
+        by_index = sorted(list(order.items()), key=lambda x: x[1])
         name_map = {
             Token.SETTING_HEADER: "Settings",
             Token.VARIABLE_HEADER: "Variables",
@@ -337,7 +337,7 @@ class SectionHeadersChecker(VisitorChecker):
 
     def visit_File(self, node):  # noqa
         self.sections_by_order = []
-        self.sections_by_existence = dict()
+        self.sections_by_existence = {}
         super().visit_File(node)
 
     def visit_SectionHeader(self, node):  # noqa
@@ -349,9 +349,8 @@ class SectionHeadersChecker(VisitorChecker):
                 section_name = "TASK HEADER"
                 if Token.TESTCASE_HEADER in self.sections_by_existence:
                     self.report("both-tests-and-tasks", node=node)
-            else:
-                if "TASK HEADER" in self.sections_by_existence:
-                    self.report("both-tests-and-tasks", node=node)
+            elif "TASK HEADER" in self.sections_by_existence:
+                self.report("both-tests-and-tasks", node=node)
         order_id = self.param("section-out-of-order", "sections_order")[section_name]
         if section_name in self.sections_by_existence:
             self.report(

@@ -211,7 +211,7 @@ class RecommendationFinder:
     @staticmethod
     def get_original_candidates(candidates, norm_candidates):
         """Map found normalized candidates to unique original candidates."""
-        return sorted(list(set(c for cand in candidates for c in norm_candidates[cand])))
+        return sorted(list({c for cand in candidates for c in norm_candidates[cand]}))
 
     def get_normalized_candidates(self, candidates):
         """
@@ -250,7 +250,7 @@ def last_non_empty_line(node):
 
 
 def next_char_is(string: str, i: int, char: str) -> bool:
-    if not i < len(string) - 1:
+    if i >= len(string) - 1:
         return False
     return string[i + 1] == char
 
@@ -318,9 +318,11 @@ def pattern_type(value: str) -> Pattern:
 
 def get_section_name(node):
     for token in node.header.data_tokens:
-        if ROBOT_VERSION.major > 3:
-            if token.type in node.header.handles_types:
-                return token.value
-        elif "HEADER" in token.type:
+        if (
+            ROBOT_VERSION.major > 3
+            and token.type in node.header.handles_types
+            or ROBOT_VERSION.major <= 3
+            and "HEADER" in token.type
+        ):
             return token.value
     return ""

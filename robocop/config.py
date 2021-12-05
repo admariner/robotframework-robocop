@@ -55,7 +55,7 @@ class SetRuleThreshold(argparse.Action):
 
 class SetListOption(argparse.Action):
     def __call__(self, parser, namespace, values, option_string=None):
-        pattern = values if values else "*"
+        pattern = values or "*"
         if "*" in pattern:
             pattern = translate_pattern(pattern)
         setattr(namespace, self.dest, pattern)
@@ -175,7 +175,7 @@ class Config:
     def preparse(self, args):
         args = sys.argv[1:] if args is None else args
         parsed_args = []
-        args = (arg for arg in args)
+        args = iter(args)
         for arg in args:
             if arg in ("-A", "--argumentfile"):
                 try:
@@ -401,7 +401,10 @@ class Config:
         try:
             config = toml.load(str(pyproject_path))
         except toml.TomlDecodeError as err:
-            raise InvalidArgumentError(f"Failed to decode {str(pyproject_path)}: {err}") from None
+            raise InvalidArgumentError(
+                f'Failed to decode {pyproject_path}: {err}'
+            ) from None
+
         config = config.get("tool", {}).get("robocop", {})
         if self.parse_toml_to_config(config):
             self.config_from = pyproject_path
@@ -454,10 +457,10 @@ class Config:
             return True
         if rule.rule_id in self.exclude or rule.name in self.exclude:
             return True
-        for pattern in self.exclude_patterns:
-            if pattern.match(rule.rule_id) or pattern.match(rule.name):
-                return True
-        return False
+        return any(
+            pattern.match(rule.rule_id) or pattern.match(rule.name)
+            for pattern in self.exclude_patterns
+        )
 
     def is_path_ignored(self, path):
         for pattern in self.ignore:

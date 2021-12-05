@@ -394,17 +394,11 @@ class EmptySettingsChecker(VisitorChecker):
         self.generic_visit(node)
 
     def visit_TestCaseName(self, node):  # noqa
-        if node.name:
-            self.parent_node_name = f"'{node.name}' Test Case"
-        else:
-            self.parent_node_name = ""
+        self.parent_node_name = f"'{node.name}' Test Case" if node.name else ""
         self.generic_visit(node)
 
     def visit_Keyword(self, node):  # noqa
-        if node.name:
-            self.parent_node_name = f"'{node.name}' Keyword"
-        else:
-            self.parent_node_name = ""
+        self.parent_node_name = f"'{node.name}' Keyword" if node.name else ""
         self.generic_visit(node)
 
     def visit_Metadata(self, node):  # noqa
@@ -483,7 +477,7 @@ class TestCaseNumberChecker(VisitorChecker):
             if self.templated_suite
             else self.param("too-many-test-cases", "max_testcases")
         )
-        discovered_testcases = sum([isinstance(child, TestCase) for child in node.body])
+        discovered_testcases = sum(isinstance(child, TestCase) for child in node.body)
         if discovered_testcases > max_testcases:
             self.report(
                 "too-many-test-cases", test_count=discovered_testcases, max_allowed_count=max_testcases, node=node

@@ -182,8 +182,13 @@ class ReturnChecker(VisitorChecker):
         for child in node.body:
             if isinstance(child, Return):
                 return_setting_node = child
-                if not child.values:
-                    self.report("empty-return", node=child, col=child.end_col_offset)
+                if not return_setting_node.values:
+                    self.report(
+                        "empty-return",
+                        node=return_setting_node,
+                        col=return_setting_node.end_col_offset,
+                    )
+
             elif isinstance(child, KeywordCall):
                 if return_setting_node is not None:
                     keyword_after_return = True
@@ -337,14 +342,13 @@ class SettingsOrderChecker(VisitorChecker):
             if first_non_builtin is None:
                 if library.name not in STDLIBS:
                     first_non_builtin = library.name
-            else:
-                if library.name in STDLIBS:
-                    self.report(
-                        "wrong-import-order",
-                        builtin_import=library.name,
-                        custom_import=first_non_builtin,
-                        node=library,
-                    )
+            elif library.name in STDLIBS:
+                self.report(
+                    "wrong-import-order",
+                    builtin_import=library.name,
+                    custom_import=first_non_builtin,
+                    node=library,
+                )
 
     def visit_LibraryImport(self, node):  # noqa
         if not node.name:
@@ -358,12 +362,13 @@ class EmptyVariableChecker(VisitorChecker):
     reports = ("empty-variable",)
 
     def visit_Variable(self, node):  # noqa
-        if ROBOT_VERSION.major == 3:  # TODO refactor
-            if node.error:
-                return
-        else:
-            if node.errors:
-                return
+        if (
+            ROBOT_VERSION.major == 3
+            and node.error
+            or ROBOT_VERSION.major != 3
+            and node.errors
+        ):
+            return
         if not node.value:  # catch variable declaration without any value
             self.report("empty-variable", node=node)
         for token in node.get_tokens(Token.ARGUMENT):
@@ -382,7 +387,7 @@ class ResourceFileChecker(VisitorChecker):
     reports = ("can-be-resource-file",)
 
     def visit_File(self, node):  # noqa
-        source = node.source if node.source else self.source
+        source = node.source or self.source
         if source:
             extension = Path(source).suffix
             file_name = Path(source).stem
@@ -390,7 +395,10 @@ class ResourceFileChecker(VisitorChecker):
                 ".resource" not in extension
                 and "__init__" not in file_name
                 and node.sections
-                and not any([isinstance(section, TestCaseSection) for section in node.sections])
+                and not any(
+                    isinstance(section, TestCaseSection)
+                    for section in node.sections
+                )
             ):
                 self.report("can-be-resource-file", file_name=Path(source).name, file_name_stem=file_name, node=node)
 
@@ -433,6 +441,4 @@ class IfChecker(VisitorChecker):
                 return False
             if_node = if_node.orelse
             other_if_node = other_if_node.orelse
-        if if_node is None and other_if_node is None:
-            return True
-        return False
+        return if_node is None and other_if_node is None

@@ -73,7 +73,7 @@ class TestReturnStatus:
     def test_return_status_with_quality_gates(self, error_msg, warning_msg, info_msg, quality_gates, return_status):
         report = ReturnStatusReport()
         report.configure("quality_gates", quality_gates)
-        for i in range(10):
+        for _ in range(10):
             report.add_message(error_msg)
             report.add_message(warning_msg)
             report.add_message(info_msg)

@@ -56,7 +56,7 @@ def msg_0102_0204_config():
             RuleParam(name="conf_param2", converter=int, default=0, desc=""),
             rule_id="0204",
             name="another-message",
-            msg=f"Message with meaning {4}",
+            msg=f'Message with meaning 4',
             severity=RuleSeverity.INFO,
         ),
     }
@@ -70,9 +70,17 @@ def msg_0101():
 @pytest.fixture
 def msg_0102_0204():
     return {
-        "0102": Rule(rule_id="0102", name="other-message", msg="""this is description""", severity=RuleSeverity.ERROR),
+        "0102": Rule(
+            rule_id="0102",
+            name="other-message",
+            msg="""this is description""",
+            severity=RuleSeverity.ERROR,
+        ),
         "0204": Rule(
-            rule_id="0204", name="another-message", msg=f"Message with meaning {4}", severity=RuleSeverity.INFO
+            rule_id="0204",
+            name="another-message",
+            msg=f'Message with meaning 4',
+            severity=RuleSeverity.INFO,
         ),
     }
 

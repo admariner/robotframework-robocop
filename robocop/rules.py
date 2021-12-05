@@ -70,7 +70,7 @@ class RuleSeverity(Enum):
             "w": cls.WARNING,
             "info": cls.INFO,
             "i": cls.INFO,
-        }.get(str(value).lower(), None)
+        }.get(str(value).lower())
         if severity is None:
             raise ValueError(f"Chose one of: {', '.join(sev.value for sev in cls)}") from None
         return severity
@@ -167,7 +167,7 @@ class Rule:
         for param in params:
             self.config[param.name] = param
         self.enabled = True
-        self.supported_version = version if version else "All"
+        self.supported_version = version or "All"
         self.enabled_in_version = self.supported_in_rf_version(version)
 
     @property
@@ -266,7 +266,7 @@ class Message:
         self.col = 1 if col is None else col
         self.end_line = self.line if end_lineno is None else end_lineno
         self.end_col = self.col if end_col is None else end_col
-        self.ext_disablers = ext_disablers if ext_disablers else []
+        self.ext_disablers = ext_disablers or []
 
     def __lt__(self, other):
         return (self.line, self.col, self.rule_id) < (

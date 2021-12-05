@@ -178,14 +178,14 @@ class Robocop:
         checkers.init(self)
 
     def list_checkers(self):
-        if not (self.config.list or self.config.list_configurables):
+        if not self.config.list and not self.config.list_configurables:
             return
         if self.config.list_configurables:
             print(
                 "All rules have configurable parameter 'severity'. Allowed values are:"
                 "\n    E / error\n    W / warning\n    I / info"
             )
-        pattern = self.config.list if self.config.list else self.config.list_configurables
+        pattern = self.config.list or self.config.list_configurables
         rule_by_id = {rule.rule_id: rule for rule in self.rules.values() if rule.matches_pattern(pattern)}
         rule_by_id = sorted(rule_by_id.values(), key=lambda x: x.rule_id)
         severity_counter = Counter({"E": 0, "W": 0, "I": 0})

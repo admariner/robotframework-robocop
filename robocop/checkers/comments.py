@@ -206,13 +206,16 @@ class CommentChecker(VisitorChecker):
                 lineno=token.lineno,
                 col=token.col_offset + 1 + token.value.lower().find("fixme"),
             )
-        if token.value.startswith("#") and token.value != "#":
-            if not token.value.startswith("# "):
-                self.report(
-                    "missing-space-after-comment",
-                    lineno=token.lineno,
-                    col=token.col_offset + 1,
-                )
+        if (
+            token.value.startswith("#")
+            and token.value != "#"
+            and not token.value.startswith("# ")
+        ):
+            self.report(
+                "missing-space-after-comment",
+                lineno=token.lineno,
+                col=token.col_offset + 1,
+            )
 
 
 class IgnoredDataChecker(RawFileChecker):
