@@ -107,17 +107,10 @@ class TestE2E:
             configure_robocop(robocop_instance, args=f"--configure {rule}:severity:E {test_data_dir}")
         assert expected in str(err)
 
-    @pytest.mark.parametrize(
-        "rules, expected",
-        [
-            ("invalid", f"Provided rule 'invalid' does not exist."),
-            ("parsing-error,invalid", "Provided rule 'invalid' does not exist."),
-            (
+    @pytest.mark.parametrize("rules, expected", [("invalid", "Provided rule 'invalid' does not exist."), ("parsing-error,invalid", "Provided rule 'invalid' does not exist."), (
                 "line-toolong",
                 r"Provided rule 'line-toolong' does not exist. Did you mean:\n    line-too-long",
-            ),
-        ],
-    )
+            )])
     def test_include_exclude_invalid_rule(self, robocop_instance, rules, expected):
         for method in ("--include", "--exclude"):
             config = Config()

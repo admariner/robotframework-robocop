@@ -89,8 +89,7 @@ class TestMessage:
                 severity=RuleSeverity.WARNING,
             )
         assert (
-            rf"Failed to configure param `Some` with value `s`. "
-            rf"Received error `invalid literal for int() with base 10: 's'`.\n    Parameter type: <class 'int'>\n"
+            "Failed to configure param `Some` with value `s`. Received error `invalid literal for int() with base 10: 's'`.\\n    Parameter type: <class 'int'>\\n"
             in str(err)
         )
 
